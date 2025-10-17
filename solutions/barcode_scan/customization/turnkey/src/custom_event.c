@@ -13,8 +13,11 @@
 #include "fatfs_vfs.h"
 #include "vfs.h"
 #include "debug/dbg.h"
+#include "hid_converter.h"
 
 pthread_t pstevent_thread;
+
+extern void hid_keyboard_send(void *data);
 
 CVI_VOID *zbar_event_handler(CVI_VOID *data)
 {
@@ -97,6 +100,32 @@ CVI_VOID *zbar_event_handler(CVI_VOID *data)
 			if(data != NULL)  {
 				printf("decoded %s symbol \"%s\"\n",
 					zbar_get_symbol_name(typ), data);
+
+				barcode_hid_result_t result;
+				int ret = barcode_to_hid(data, &result);
+				if (ret != 0) {
+					printf("Conversion failed, error code: %d\n", ret);
+					continue;
+				}
+				// printf("Generated HID reports: %d\n\n", result.report_count);
+
+				for (int i = 0; i < result.report_count; i++) {
+					const hid_keyboard_report_t *report = &result.reports[i];
+					char hid_buf[8] = {0};
+					hid_buf[0] = report->modifiers;
+					hid_buf[1] = report->reserved;
+					for (int j = 0; j < 6; j++) {
+						hid_buf[2 + j] = report->keys[j];
+					}
+					hid_keyboard_send(hid_buf);
+					// printf("%02X%02X%02X%02X%02X%02X%02X%02X ",
+					// 	report->modifiers, report->reserved,
+					// 	report->keys[0], report->keys[1], report->keys[2],
+					// 	report->keys[3], report->keys[4], report->keys[5]);
+
+					// if ((i + 1) % 2 == 0) printf("\n");
+				}
+				free_barcode_hid_result(&result);
 			}
 		}
 		// printf("%s %d \n", __func__, __LINE__);

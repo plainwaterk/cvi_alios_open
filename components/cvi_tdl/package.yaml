@@ -147,6 +147,7 @@ source_file:
   - tdl_sdk/modules/core/object_detection/yolov8/*.cpp
   - tdl_sdk/modules/core/object_detection/yolov10/*.cpp
   - tdl_sdk/modules/core/object_detection/yolox/*.cpp
+  - tdl_sdk/modules/core/tamper_detection/*.cpp
   - tdl_sdk/modules/core/sound_classification/*.cpp
 
   - tdl_sdk/modules/service/*.cpp

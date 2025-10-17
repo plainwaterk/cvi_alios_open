@@ -54,7 +54,6 @@ static void _GPIOSetValue(u8 gpio_grp, u8 gpio_num, u8 level)
     }
     csi_gpio_write(&gpio, GPIO_PIN_MASK(gpio_num), level);
     // printf("test pin end and success.\r\n");
-    csi_gpio_uninit(&gpio);
 }
 
 static void _UsbPinmux(void)

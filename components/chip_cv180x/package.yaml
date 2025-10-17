@@ -186,6 +186,7 @@ source_file:
   - src/hal/dma/cvi/src/hal_dma.c
   - src/hal/timer/cvi/src/hal_timer.c
   - src/hal/rtc/cvi/src/hal_rtc.c
+  - src/hal/clk/*.c
 
   - src/drivers/i2s/dw/src/dw_i2s.c
   - src/drivers/i2s/dw/src/i2s.c

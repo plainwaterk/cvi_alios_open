@@ -1690,7 +1690,7 @@ void *aos_malloc_align(size_t alignment, size_t size)
     alignment = align_size;
 
     /* get total aligned size */
-    align_size = size + (alignment << 1);
+    align_size = size + alignment + sizeof(void*);
     /* allocate memory block from heap */
 #if (RHINO_CONFIG_MM_DEBUG > 0u)
     ptr = aos_malloc(align_size | AOS_UNSIGNED_INT_MSB);

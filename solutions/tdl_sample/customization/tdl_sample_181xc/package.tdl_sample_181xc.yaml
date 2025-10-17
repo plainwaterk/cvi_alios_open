@@ -32,7 +32,6 @@ depends:
   - drivers: develop
   - libc_stub: develop
   - uservice: develop
-  - drv_wifi_hi3861l_fnlink: develop
   - partition: develop
   - littlefs: v7.6.1
   - key_mgr: develop
@@ -41,9 +40,11 @@ depends:
   - drv_sdmmc: v2.0
   - lwip: develop
   - netmgr: develop
-  - cjson: develop
+  # - drv_wifi_hi3861l_fnlink: develop
+  # - cjson: develop
   - fatfs: cv_dev
   - vfs: develop
+  - lwext4: develop
   - cv181xc_qfn: v0.0.1
   - chip_cv181x: v0.0.1
   - cvi_kernel: v0.0.1
@@ -52,10 +53,13 @@ depends:
   - cvi_tdl: v0.0.1
   - minialsa: v7.5.1
   - drv_snd_cv181x: v7.5.1
+  - lvgl: develop
   - cvi_sensor: develop
   - rtsp: develop
-  # - cvi_mw_tpu: v0.0.1
+  - cherryusb: develop
   - cvi_platform: develop
+  - g711: v0.0.1
+  - zlib: develop
   # - cvi_test: develop
   - fw_h26x: v0.0.1
 
@@ -105,24 +109,13 @@ source_file:
 #   CONFIG_PARAM_NOT_CHECK: y
 #   CONFIG_CLI: y
 def_config:
-  __CV181X__: 1
   _MIDDLEWARE_V2_: 1
-  AOS_COMP_CLI: 1
   CONFIG_DEBUG: 1
   CONFIG_DEBUG_MM: 1
-  CONFIG_SUPPORT_TPU: 1
+  AOS_COMP_CLI: 1
   CONFIG_KV_ENABLE_CACHE: 0
   CONFIG_INIT_TASK_STACK_SIZE: 8192
-  # Demo APP Func config
-  CONFIG_APP_TEST: 1
-  CONFIG_APP_VENC_SUPPORT: 1
-  CONFIG_APP_RTSP_SUPPORT: 1
-  CONFIG_APP_ETHERNET_SUPPORT: 1
-  CONFIG_APP_HI3861_WIFI_SUPPORT: 0
   # UART_MODE_SYNC: 1
-  CONFIG_BOARD_CV181XC: 1
-  CONFIG_BOARD_CV181XH: 0
-  CONFIG_SD_FATFS_MOUNTPOINT: "/mnt/sd"
   CLI_CONFIG_STACK_SIZE: 8192
   # ULOG_CONFIG_POP_FS: 1
   ULOG_CONFIG_ASYNC: 1 # ulog异步配置项，1表示开启异步打印，0表示同步打印
@@ -130,18 +123,35 @@ def_config:
   ULOG_CONFIG_ASYNC_BUF_SIZE: 8192
   ULOG_CONFIG_LOG_SIZE: 512
   USE_4K_ERASE_SECTION: 1
-  CONFIG_SIMPLE_FONTMOD: 1
-  CONFIG_VENC_TEST_CHN: 2
-  CONFIG_SENSOR_GCORE_GC4653: 1
+
+  ## Board
+  __CV181X__: 1
+  CONFIG_BOARD_CV181XC: 1
+  CONFIG_BOARD_CV181XH: 0
+  CONFIG_SD_FATFS_MOUNTPOINT: "/mnt/sd"
   CONFIG_SUPPORT_NORFLASH: 1
 
+  ## Demo APP Func config
+  CONFIG_APP_TEST: 1
+  CONFIG_SUPPORT_TPU: 1
+  CONFIG_APP_ETHERNET_SUPPORT: 0
+  CONFIG_APP_HI3861_WIFI_SUPPORT: 0
+  CONFIG_APP_RTSP_SUPPORT: 0
+  CONFIG_APP_VENC_SUPPORT: 1
+  CONFIG_SIMPLE_FONTMOD: 0
+  CONFIG_VENC_TEST_CHN: 2
+
+  ## Sensor
+  CONFIG_SENSOR_GCORE_GC4653: 1
   CONFIG_SNS0_TYPE: 15
   CONFIG_SNS1_TYPE: 0
   CONFIG_SNS2_TYPE: 0
 
+  ## Panel
   CONFIG_PANEL_HX8394: 0
   CONFIG_PANEL_ILI9488: 0
 
+  ## Misc
   CONFIG_PQTOOL_SUPPORT: 0
   CONFIG_PQBIN_USE_JSON: 0
   CONFIG_ISP_SUPPORT_PROC: 0
@@ -151,7 +161,7 @@ def_config:
   CONFIG_TDL_SAMPLE_ADAS: 0
   CONFIG_TDL_SAMPLE_FACE_DETECTION: 0
   CONFIG_TDL_SAMPLE_FACE_RECOGNITION: 0
-  CONFIG_TDL_SAMPLE_FACE_TRACKING: 0
+  CONFIG_TDL_SAMPLE_FACE_TRACKING: 1
   CONFIG_TDL_SAMPLE_LIVENESS: 0
   CONFIG_TDL_SAMPLE_OBJ_DETECTION: 0
   CONFIG_TDL_SAMPLE_PEDESTRIAN: 0

@@ -931,6 +931,7 @@ void SDIO_PadSetting(SDIF_TYPE *base)
 		mmio_write_8(REG_SDIO1_DAT3_PIO_REG, REG_SDIO1_DAT3_PIO_VALUE);
 	}
 	else if(BASE == SDIO2_BASE) {
+#ifndef __CV180X__
 		//set pu/down
 		mmio_write_32(REG_SDIO2_RSTN_PAD_REG,
 			(mmio_read_32(REG_SDIO2_RSTN_PAD_REG) & REG_SDIO2_PAD_MASK) |
@@ -961,6 +962,7 @@ void SDIO_PadSetting(SDIF_TYPE *base)
 		mmio_write_8(REG_SDIO2_DAT1_PIO_REG, REG_SDIO2_DAT1_PIO_VALUE);
 		mmio_write_8(REG_SDIO2_DAT2_PIO_REG, REG_SDIO2_DAT2_PIO_VALUE);
 		mmio_write_8(REG_SDIO2_DAT3_PIO_REG, REG_SDIO2_DAT3_PIO_VALUE);
+#endif
 	}
 }
 
@@ -1370,7 +1372,9 @@ void csi_sdif_config(sdif_handle_t handle, sdif_config_t *config)
 	uintptr_t BASE = (uintptr_t)base;
 	static bool sd0_clock_state = false;
 	static bool sd1_clock_state = false;
+#ifndef __CV180X__
 	static bool sd2_clock_state = false;
+#endif
 
 	if (BASE == SDIO0_BASE) {
 		//printf("MMC_FLAG_SDCARD.\n");
@@ -1395,6 +1399,7 @@ void csi_sdif_config(sdif_handle_t handle, sdif_config_t *config)
 			sd1_clock_state = true;
 		}
 	} else if (BASE == SDIO2_BASE) {
+#ifndef __CV180X__
 		//printf("MMC_FLAG_EMMC.\n");
 		if (sd2_clock_state == false) {
 #ifndef CONFIG_KERNEL_NONE
@@ -1405,6 +1410,7 @@ void csi_sdif_config(sdif_handle_t handle, sdif_config_t *config)
 			mmio_clrbits_32(CLOCK_BYPASS_SELECT_REGISTER, BIT(5));
 			sd2_clock_state = true;
 		}
+#endif
 	}
 
 	param[sdif].ier = SDIF_INT_BUS_POWER | SDIF_INT_DATA_END_BIT |

@@ -110,3 +110,20 @@ void hid_keyboard_test()
 }
 
 ALIOS_CLI_CMD_REGISTER(hid_keyboard_test, hid_keyboard_test, usb hid_keyboard keyborad input);
+
+void hid_keyboard_send(void *data)
+{
+    uint8_t sendbuffer[8];
+    memset(sendbuffer, 0, sizeof(sendbuffer));
+    memcpy(sendbuffer, (const char *)data, sizeof(sendbuffer));
+
+    int ret = usbd_ep_start_write(hid_keyboard_info.hid_keyboard_int_ep.ep_addr, sendbuffer, 8);
+    if (ret < 0) {
+        printf("hid_keyboard send fail");
+        return;
+    }
+    hid_keyboard_state = HID_STATE_BUSY;
+    while (hid_keyboard_state == HID_STATE_BUSY) {
+        aos_msleep(1);
+    }
+}

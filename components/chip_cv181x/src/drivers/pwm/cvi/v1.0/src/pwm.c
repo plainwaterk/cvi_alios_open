@@ -73,7 +73,7 @@ csi_error_t csi_pwm_out_config(csi_pwm_t *pwm,
     }
 
     pr_debug("========period_ns: %u, duty_ns:%u=======\n", period_ns, pulse_width_ns);
-    period_clk = (period_ns * count_unit) / NSEC_COUNT;   
+    period_clk = (period_ns * count_unit) / NSEC_COUNT;
 
     switch (polarity) {
         case PWM_POLARITY_LOW:
@@ -234,4 +234,89 @@ void csi_pwm_detach_callback(csi_pwm_t *pwm)
     pwm->arg = NULL;
 
     return;
+}
+
+csi_error_t csi_pwm_shift_config(csi_pwm_t *pwm,
+  uint32_t  channel,
+  uint64_t shift_ns)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+
+  csi_error_t ret = CSI_OK;
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+
+  // uint32_t count_unit = soc_get_pwm_freq((uint32_t)pwm->dev.idx) / 1000000U;
+  const uint64_t count_unit = 100000000;  // 100M count per second
+  const uint64_t NSEC_COUNT = 1000000000;  // ns
+  unsigned long long shift_clk;
+
+  ret = CVI_PWM_CHECK_CHANNEL_NUM(channel);
+
+  shift_clk = (shift_ns * count_unit) / NSEC_COUNT;
+  printf("========shift_ns: %lu, shift_clk: %llu=======\n", shift_ns, shift_clk);
+  cvi_pwm_shift_mode_enable(reg_base);
+  cvi_pwm_set_shift_count_ch(reg_base, (channel & 0x3), shift_clk);
+
+  return ret;
+}
+csi_error_t csi_pwm_shift_mode_enable(csi_pwm_t *pwm)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  cvi_pwm_shift_mode_enable(reg_base);
+  return CSI_OK;
+}
+csi_error_t csi_pwm_shift_mode_disable(csi_pwm_t *pwm)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  cvi_pwm_shift_mode_disable(reg_base);
+  return CSI_OK;
+}
+csi_error_t csi_pwm_shift_start(csi_pwm_t *pwm)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+
+  cvi_pwm_shift_start_enable(reg_base);
+  return CSI_OK;
+}
+
+csi_error_t csi_pwm_shift_stop(csi_pwm_t *pwm)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+
+  cvi_pwm_shift_start_disable(reg_base);
+  return CSI_OK;
+}
+csi_error_t csi_pwm_count_mode_enable(csi_pwm_t *pwm, uint32_t channel)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  cvi_pwm_count_mode_enable(reg_base,(channel&0x3));
+  return CSI_OK;
+}
+csi_error_t csi_pwm_count_mode_disable(csi_pwm_t *pwm, uint32_t channel)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  cvi_pwm_count_mode_disable(reg_base,(channel&0x3));
+  return CSI_OK;
+}
+
+csi_error_t csi_pwm_get_count(csi_pwm_t *pwm, uint32_t channel, uint32_t *count)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  *count = cvi_pwm_get_pulse_count_ch(reg_base, (channel&0x3));
+  return CSI_OK;
+}
+
+csi_error_t csi_pwm_set_pulse_count(csi_pwm_t *pwm, uint32_t channel, uint32_t count)
+{
+  CSI_PARAM_CHK(pwm, CSI_ERROR);
+  unsigned long reg_base = HANDLE_REG_BASE(pwm);
+  cvi_pwm_set_pulse_count_ch(reg_base, (channel&0x3), count);
+  return CSI_OK;
 }

@@ -176,6 +176,8 @@ typedef struct _venc_chn_context {
 	VENC_H264_ENTROPY_S h264Entropy;
 	VENC_H264_TRANS_S h264Trans;
 	VENC_H265_TRANS_S h265Trans;
+	VENC_H264_SLICE_SPLIT_S h264Split;
+	VENC_H265_SLICE_SPLIT_S h265Split;
 	union {
 		VENC_H264_VUI_S h264Vui;
 		VENC_H265_VUI_S h265Vui;

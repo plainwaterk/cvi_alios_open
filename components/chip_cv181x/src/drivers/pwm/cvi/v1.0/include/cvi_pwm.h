@@ -212,6 +212,11 @@ static struct cvi_pwm_regs_t *cvi_pwm_reg = &cv182x_pwm_reg;
 
 #define CVI_CAP_FREQDATA_pos                                 (0U)
 #define CVI_CAP_FREQDATA_msk                                 (0xffffffff)
+#define CVI_PWM_SHIFTMODE_MASK	                            (0x10000)
+#define PWM_SHIFTCOUNTX(reg_base, _ch_)     *((__IOM uint32_t *)(reg_base + cvi_pwm_reg->SHIFTCOUNT0 + (_ch_ << 2)))
+#define PWM_PULSECOUNTX(reg_base, _ch_)     *((__IOM uint32_t *)(reg_base + cvi_pwm_reg->PCOUNT0 + (_ch_ << 2)))
+#define CVI_PWM_COUNTMODE_POS(ch)                              (8U+ch)
+#define CVI_PWM_COUNTMODE_MASK_CH(_ch_)                      (1U<<CVI_PWM_COUNTMODE_POS(_ch_))
 
 static inline void cvi_pwm_set_high_period_ch(unsigned long reg_base, uint32_t ch, unsigned long long value)
 {
@@ -286,7 +291,36 @@ static inline uint32_t cvi_cap_get_freq_data_ch(unsigned long reg_base, uint32_t
 {
     return CAP_FREQDATA(reg_base, ch);
 }
-
+static inline void cvi_pwm_set_shift_count_ch(unsigned long reg_base, uint32_t ch, uint32_t value)
+{
+    PWM_SHIFTCOUNTX(reg_base, ch) = value;
+}
+static inline void cvi_pwm_shift_mode_enable(unsigned long reg_base)
+{
+    PWM_POLARITY(reg_base)|=CVI_PWM_SHIFTMODE_MASK;
+}
+static inline void cvi_pwm_shift_mode_disable(unsigned long reg_base)
+{
+    PWM_POLARITY(reg_base)&=~CVI_PWM_SHIFTMODE_MASK;
+}
+static inline void cvi_pwm_shift_start_enable(unsigned long reg_base){
+    PWM_SHIFTSTART(reg_base) |= 1;
+}
+static inline void cvi_pwm_shift_start_disable(unsigned long reg_base){
+    PWM_SHIFTSTART(reg_base) &= ~1;
+}
+static inline void cvi_pwm_count_mode_enable(unsigned long reg_base,uint32_t ch){
+    PWM_POLARITY(reg_base)|=CVI_PWM_COUNTMODE_MASK_CH(ch);
+}
+static inline void cvi_pwm_count_mode_disable(unsigned long reg_base, uint32_t ch){
+    PWM_POLARITY(reg_base)&=~CVI_PWM_COUNTMODE_MASK_CH(ch);
+}
+static inline void cvi_pwm_set_pulse_count_ch(unsigned long reg_base, uint32_t ch, uint32_t value){
+    PWM_PULSECOUNTX(reg_base, ch) = value;
+}
+static inline uint32_t cvi_pwm_get_pulse_count_ch(unsigned long reg_base, uint32_t ch){
+    return PWM_PULSECOUNTX(reg_base, ch);
+}
 /**
  * Check channel is exceed max channel num
 */

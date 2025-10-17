@@ -203,6 +203,14 @@ static int stop_isp(VI_PIPE ViPipe)
         return s32Ret;
     }
 
+    CVI_S32 snsr_type[VI_MAX_DEV_NUM];
+    ISP_SNS_OBJ_S* pSnsObj;
+    CVI_U8 dev_num;
+    MEDIA_CHECK_RET(getSnsType(snsr_type, &dev_num), "getSnsType fail");
+    pSnsObj = getSnsObj(snsr_type[ViPipe]);
+    MEDIA_CHECK_RET(pSnsObj->pfnUnRegisterCallback(ViPipe, &stAeLib, &stAwbLib),
+                    "sensor_unregister_callback failed");
+
     s32Ret = CVI_AE_UnRegister(ViPipe, &stAeLib);
     if (s32Ret) {
         MEDIABUG_PRINTF("AE Algo unRegister failed!, error: %d\n", s32Ret);
@@ -810,29 +818,12 @@ int MEDIA_VIDEO_ViDeinit(PARAM_VI_CFG_S* pstViCfg) {
 	if (pstViCfg->u32WorkSnsCnt == 0) {
 		return CVI_SUCCESS;
 	}
-
-	CVI_S32 snsr_type[VI_MAX_DEV_NUM];
-	ISP_SNS_OBJ_S* pSnsObj;
-	CVI_U8 dev_num;
-	MEDIA_CHECK_RET(getSnsType(snsr_type, &dev_num), "getSnsType fail");
-
-	ALG_LIB_S stAeLib, stAwbLib;
-
 	for (i = 0; i < pstViCfg->u32WorkSnsCnt; i++) {
 		ViChn = i;
-
 		ViDev = pstViCfg->pstDevInfo[i].u8AttachDev > 0
 				  ? VI_MAX_PHY_DEV_NUM + pstViCfg->pstDevInfo[i].u8AttachDev - 1
 				  : i;
-		stAeLib.s32Id = stAwbLib.s32Id = ViDev;
-		strncpy(stAeLib.acLibName, CVI_AE_LIB_NAME, ALG_LIB_NAME_SIZE_MAX);
-		strncpy(stAwbLib.acLibName, CVI_AWB_LIB_NAME, ALG_LIB_NAME_SIZE_MAX);
-
-		pSnsObj = getSnsObj(snsr_type[i]);
-		MEDIA_CHECK_RET(pSnsObj->pfnUnRegisterCallback(ViDev, &stAeLib, &stAwbLib),
-						"sensor_unregister_callback failed");
 		MEDIA_CHECK_RET(stop_isp(ViDev), "stop_isp fail");
-
 		ret = CVI_VI_DisableChn(ViDev, ViChn);
 		if (ret != CVI_SUCCESS) {
 			MEDIABUG_PRINTF("CVI_VI_DisableChn FAIL!\n");
@@ -2032,11 +2023,8 @@ void testMedia_multiplex_switch_pipeline(int32_t argc, char** argv)
     gettimeofday(&start, NULL);
 
     /* For some sensors, user should set proper page select, current config is for SP2509 */
-    if (atoi(argv[1]) == 0) {
-        sensor_i2c_write(0x1, 0x3d, 0xfd, 0x0, 0x1, 0x1);
-    } else {
-        sensor_i2c_write(0x0, 0x3d, 0xfd, 0x0, 0x1, 0x1);
-    }
+    sensor_i2c_write(0x1, 0x3d, 0xfd, 0x0, 0x1, 0x1);
+
 
     _MEDIA_VIDEO_ViDeInit();
     g_mediaVideoRunStatus = 0;

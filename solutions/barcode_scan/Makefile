@@ -6,19 +6,24 @@ endif
 
 MK_GENERATED_IMGS_PATH:=generated
 ALGORITHMS_PATH:=../../components/chip_d1/d1_flash.elf
+STRIP:=riscv64-unknown-elf-strip
 
 HOST_TOOLS := $(CURDIR)/../../host-tools/Xuantie-900-gcc-elf-newlib-x86_64-V2.6.1/bin
 export PATH := $(HOST_TOOLS):$(PATH)
 PROJECT := turnkey
+CHIP_ARCH := cv180x
+TDL_DIR := $(CURDIR)/../../components/cvi_tdl
 .PHONY:startup
 startup: all
 
 all:
+	@echo "build CHIP_ARCH by $(CHIP_ARCH)"
 	@echo "Build Solution by $(BOARD) "
 	$(CPRE) if [ -e $(CURDIR)/prebuild.sh ]; then bash $(CURDIR)/prebuild.sh $(shell echo $(CHIP_ARCH) | tr A-Z a-z); fi
 	$(CPRE) if [ -e package.yaml ]; then rm -f package.yaml; fi
 	$(CPRE) ln -sf customization/$(PROJECT)/package.$(PROJECT).yaml package.yaml
 	$(CPRE) scons $(VERB) --board=$(BOARD) -j$(NPROC)
+	$(CPRE) $(STRIP) --strip-unneeded $(CURDIR)/yoc_sdk/lib/*.a
 	@cp yoc.bin $(MK_GENERATED_IMGS_PATH)/data/prim
 ifeq ($(YOC_COMPRESS),y)
 	@echo YoC Compress start

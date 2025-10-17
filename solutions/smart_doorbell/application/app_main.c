@@ -16,9 +16,9 @@
 #include "media_audio.h"
 #include "media_nightvision.h"
 #include "media_video.h"
+#include "ota_util.h"
 #include "platform.h"
 #include "usbd_comp.h"
-#include "ota_util.h"
 
 #if CONFIG_USBD_CDC_RNDIS
 #include "usbd_cdc_rndis.h"
@@ -42,6 +42,7 @@ extern int csi_uart_set_output_stat(int stat);
 #if CONFIG_QUICK_STARTUP_SUPPORT
 #define CONFIG_DUMP_RECORD_TIME
 #endif
+
 #ifdef CONFIG_DUMP_RECORD_TIME
 #define TIME_RECORDS_ADDR 0x0e000010
 #define TIME_RECORDS_SIZE (2 * 14)
@@ -95,6 +96,7 @@ static void _print_record_time(void)
     printf("app_main %d\n", t_r.app_main);
 }
 #endif
+
 int main(int argc, char* argv[])
 {
 #ifdef CONFIG_DUMP_RECORD_TIME
@@ -106,6 +108,12 @@ int main(int argc, char* argv[])
     PLATFORM_IoInit();
     // Fs init
     YOC_SYSTEM_FsVfsInit();
+
+#ifdef CONFIG_DUMP_RECORD_TIME
+    aos_msleep(300);
+    csi_uart_set_output_stat(1);
+    _print_record_time();
+#endif
 
 #if CONFIG_QUICK_STARTUP_SUPPORT
     MISC_SimulateReadAiModel();
@@ -129,7 +137,7 @@ int main(int argc, char* argv[])
 #if CONFIG_SUPPORT_USB_DC
     // usb composite device
     usbd_comp_init();
-    //usb ota
+    // usb ota
     cvi_ota_init();
 #endif
 #if CONFIG_NIGHT_VISION_SUPPORT
@@ -157,11 +165,7 @@ int main(int argc, char* argv[])
 #endif
     LOGI(TAG, "app start........\n");
     APP_CustomEventStart();
-#ifdef CONFIG_DUMP_RECORD_TIME
-    aos_msleep(300);
-    csi_uart_set_output_stat(1);
-    _print_record_time();
-#endif
+
 #if (CONFIG_ENABLE_FASTBOOT == 1)
     efuse_fastboot();
 #endif

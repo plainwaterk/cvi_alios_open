@@ -8,7 +8,6 @@
 
 #include <core/utils/vpss_helper.h>
 #include <cvi_comm.h>
-#include <rtsp.h>
 #include <sample_comm.h>
 #include "cvi_tdl.h"
 

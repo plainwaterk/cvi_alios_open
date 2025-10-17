@@ -836,6 +836,56 @@ void smooth_dump_raw(int32_t argc, char **argv)
 					stVideoFrame[1].stVFrame.u32TimeRef);
 		}
 
+		// save raw file
+		gettimeofday(&tv1, NULL);
+
+		for (j = 0; j < frm_num; j++) {
+			size_t image_size = stVideoFrame[j].stVFrame.u32Length[0];
+			unsigned char *ptr = calloc(1, image_size);
+			FILE *output;
+			char img_name[128] = {0,}, order_id[8] = {0,};
+
+			CVI_TRACE_LOG(CVI_DBG_WARN, "paddr(%#llx) vaddr(%p)\n",
+						stVideoFrame[j].stVFrame.u64PhyAddr[0],
+						stVideoFrame[j].stVFrame.pu8VirAddr[0]);
+
+			memcpy(ptr, (const void *)stVideoFrame[j].stVFrame.u64PhyAddr[0],
+				stVideoFrame[j].stVFrame.u32Length[0]);
+
+			switch (stVideoFrame[j].stVFrame.enBayerFormat) {
+			default:
+			case BAYER_FORMAT_BG:
+				snprintf(order_id, sizeof(order_id), "BG");
+				break;
+			case BAYER_FORMAT_GB:
+				snprintf(order_id, sizeof(order_id), "GB");
+				break;
+			case BAYER_FORMAT_GR:
+				snprintf(order_id, sizeof(order_id), "GR");
+				break;
+			case BAYER_FORMAT_RG:
+				snprintf(order_id, sizeof(order_id), "RG");
+				break;
+			}
+
+			snprintf(img_name, sizeof(img_name),
+					"/mnt/sd/vi_%d_compress_mode_%d_%s_%s_w_%d_h_%d_x_%d_y_%d_tv_%ld_%ld.raw",
+					ViPipe, enMode, (j == 0) ? "LE" : "SE", order_id,
+					stVideoFrame[j].stVFrame.u32Width,
+					stVideoFrame[j].stVFrame.u32Height,
+					stVideoFrame[j].stVFrame.s16OffsetLeft,
+					stVideoFrame[j].stVFrame.s16OffsetTop,
+					tv1.tv_sec, tv1.tv_usec);
+
+			CVI_TRACE_LOG(CVI_DBG_WARN, "dump image %s\n", img_name);
+
+			output = fopen(img_name, "wb");
+
+			fwrite(ptr, image_size, 1, output);
+			fclose(output);
+			free(ptr);
+		}
+
 		s32Ret = CVI_VI_PutSmoothRawDump(ViPipe, stVideoFrame);
 		if (s32Ret != CVI_SUCCESS) {
 			CVI_TRACE_LOG(CVI_DBG_ERR, "[%d] release frame failed\n", i);
@@ -848,56 +898,6 @@ void smooth_dump_raw(int32_t argc, char **argv)
 		CVI_TRACE_LOG(CVI_DBG_ERR, "stop failed\n");
 		s32Ret = CVI_FAILURE;
 		return;
-	}
-
-	// save raw file
-	gettimeofday(&tv1, NULL);
-
-	for (j = 0; j < frm_num; j++) {
-		size_t image_size = stVideoFrame[j].stVFrame.u32Length[0];
-		unsigned char *ptr = calloc(1, image_size);
-		FILE *output;
-		char img_name[128] = {0,}, order_id[8] = {0,};
-
-		CVI_TRACE_LOG(CVI_DBG_WARN, "paddr(%#llx) vaddr(%p)\n",
-					stVideoFrame[j].stVFrame.u64PhyAddr[0],
-					stVideoFrame[j].stVFrame.pu8VirAddr[0]);
-
-		memcpy(ptr, (const void *)stVideoFrame[j].stVFrame.u64PhyAddr[0],
-			stVideoFrame[j].stVFrame.u32Length[0]);
-
-		switch (stVideoFrame[j].stVFrame.enBayerFormat) {
-		default:
-		case BAYER_FORMAT_BG:
-			snprintf(order_id, sizeof(order_id), "BG");
-			break;
-		case BAYER_FORMAT_GB:
-			snprintf(order_id, sizeof(order_id), "GB");
-			break;
-		case BAYER_FORMAT_GR:
-			snprintf(order_id, sizeof(order_id), "GR");
-			break;
-		case BAYER_FORMAT_RG:
-			snprintf(order_id, sizeof(order_id), "RG");
-			break;
-		}
-
-		snprintf(img_name, sizeof(img_name),
-				"/mnt/sd/vi_%d_compress_mode_%d_%s_%s_w_%d_h_%d_x_%d_y_%d_tv_%ld_%ld.raw",
-				ViPipe, enMode, (j == 0) ? "LE" : "SE", order_id,
-				stVideoFrame[j].stVFrame.u32Width,
-				stVideoFrame[j].stVFrame.u32Height,
-				stVideoFrame[j].stVFrame.s16OffsetLeft,
-				stVideoFrame[j].stVFrame.s16OffsetTop,
-				tv1.tv_sec, tv1.tv_usec);
-
-		CVI_TRACE_LOG(CVI_DBG_WARN, "dump image %s\n", img_name);
-
-		output = fopen(img_name, "wb");
-
-		fwrite(ptr, image_size, 1, output);
-		fclose(output);
-		free(ptr);
 	}
 
 	for (CVI_U32 i = 0; i < cfg.u32BlkCnt; i++) {

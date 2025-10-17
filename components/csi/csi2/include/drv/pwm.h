@@ -151,6 +151,73 @@ csi_error_t csi_pwm_enable_pm(csi_pwm_t *pwm);
 */
 void csi_pwm_disable_pm(csi_pwm_t *pwm);
 
+/**
+  \brief       Enable PWM shift mode
+  \param[in]   pwm    Handle to operate
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_shift_mode_enable(csi_pwm_t *pwm);
+/**
+  \brief       Disable PWM shift mode
+  \param[in]   pwm    Handle to operate
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_shift_mode_disable(csi_pwm_t *pwm);
+
+/**
+  \brief       Stop PWM shift mode
+  \param[in]   pwm    Handle to operate
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_shift_stop(csi_pwm_t *pwm);
+
+/**
+  \brief       Start PWM shift mode
+  \param[in]   pwm    Handle to operate
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_shift_start(csi_pwm_t *pwm);
+
+/**
+  \brief       Config PWM shift mode
+  \param[in]   pwm    Handle to operate
+  \param[in]   channel    Channel num
+  \param[in]   shift_ns    Shift time in ns
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_shift_config(csi_pwm_t *pwm, uint32_t channel, uint64_t shift_ns);
+
+/**
+  \brief       Enable PWM count mode
+  \param[in]   pwm    Handle to operate
+  \param[in]   channel    Channel num
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_count_mode_enable(csi_pwm_t *pwm, uint32_t channel);
+/**
+  \brief       Disable PWM count mode
+  \param[in]   pwm    Handle to operate
+  \param[in]   channel    Channel num
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_count_mode_disable(csi_pwm_t *pwm, uint32_t channel);
+/**
+  \brief       Set PWM pulse count
+  \param[in]   pwm    Handle to operate
+  \param[in]   channel    Channel num
+  \param[in]   count    Pulse count
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_set_pulse_count(csi_pwm_t *pwm, uint32_t channel, uint32_t count);
+/**
+  \brief       Get PWM pulse count
+  \param[in]   pwm    Handle to operate
+  \param[in]   channel    Channel num
+  \param[out]   count    Pulse count
+  \return      Error code \ref csi_error_t
+*/
+csi_error_t csi_pwm_get_pulse_count(csi_pwm_t *pwm, uint32_t channel, uint32_t *count);
+
 #ifdef __cplusplus
 }
 #endif

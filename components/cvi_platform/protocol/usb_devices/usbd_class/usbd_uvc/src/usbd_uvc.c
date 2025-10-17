@@ -36,8 +36,8 @@
 #endif
 
 static int av_session_init_flag = CVI_FALSE;
-static atomic_t uvc_pause_flag  = CVI_FALSE;
-static atomic_t uvc_pause_done  = CVI_FALSE;
+static atomic_t uvc_pause_flags[USBD_UVC_NUM]  = {CVI_FALSE};
+static atomic_t uvc_pause_dones[USBD_UVC_NUM]  = {CVI_FALSE};
 
 static uint8_t enum_speed = USB_SPEED_UNKNOWN;
 
@@ -49,7 +49,8 @@ static struct uvc_frame_info_st yuy2_frame_info[] = {
 static struct uvc_frame_info_st mjpeg_frame_info[] = {
     {1, 800, 480, 15, 0, 10 * 1024},
     {2, 864, 480, 30, 0, 10 * 1024},
-    {3, 1920, 1080, 30, 0, 20 * 1024},
+    {3, 1280, 720, 30, 0, 20 * 1024},
+    {4, 1920, 1080, 30, 0, 20 * 1024},
 };
 
 static struct uvc_frame_info_st h264_frame_info[] = {
@@ -736,19 +737,17 @@ static void video_streaming_send(struct uvc_device_info* uvc, int dev_index)
 
 static void* send_to_uvc(void* arg)
 {
-    uint32_t i        = 0;
     int64_t dev_index = (int64_t)arg;
+    atomic_t* uvc_pause_flag = &uvc_pause_flags[dev_index];
+    atomic_t* uvc_pause_done = &uvc_pause_dones[dev_index];
 
     while (av_session_init_flag) {
-        if (rhino_atomic_get(&uvc_pause_flag)) {
-            rhino_atomic_inc(&uvc_pause_done);
-            while (rhino_atomic_get(&uvc_pause_done)) {
+        if (rhino_atomic_get(uvc_pause_flag)) {
+            rhino_atomic_inc(uvc_pause_done);
+            while (rhino_atomic_get(uvc_pause_done)) {
                 aos_msleep(1);
             }
-
-            for (i = 0; i < USBD_UVC_NUM; i++) {
-                uvc[i].update_flag = 1;
-            }
+            uvc[dev_index].update_flag = 1;
         }
 
         if (uvc[dev_index].streaming_on) {
@@ -1014,19 +1013,25 @@ void uvc_switch(int argc, char** argv)
         printf("Usage: %s [UVC_ID] [VENC_ID] [VPSS_GrpID] [VPSS_ChnID]\n\n", argv[0]);
         return;
     }
+    uint32_t id                = atoi(argv[1]);
+    if (id < 0 || id >= USBD_UVC_NUM) {
+        printf("Illegal [UVC_ID], shall 0<=[UVC_ID]<=%d, however input is %d\n\n", USBD_UVC_NUM - 1, id);
+        return;
+    }
+    atomic_t* uvc_pause_flag = &uvc_pause_flags[id];
+    atomic_t* uvc_pause_done = &uvc_pause_dones[id];
 
-    rhino_atomic_inc(&uvc_pause_flag);
-    while (!rhino_atomic_get(&uvc_pause_done)) {
+    rhino_atomic_inc(uvc_pause_flag);
+    while (!rhino_atomic_get(uvc_pause_done)) {
         aos_msleep(1);
     }
 
-    uint32_t id                = atoi(argv[1]);
     uvc[id].video.venc_channel = atoi(argv[2]);
     uvc[id].video.vpss_group   = atoi(argv[3]);
     uvc[id].video.vpss_channel = atoi(argv[4]);
 
-    rhino_atomic_dec(&uvc_pause_flag);
-    rhino_atomic_dec(&uvc_pause_done);
+    rhino_atomic_dec(uvc_pause_flag);
+    rhino_atomic_dec(uvc_pause_done);
 }
 ALIOS_CLI_CMD_REGISTER(uvc_switch, uvc_switch, uvc_switch);
 

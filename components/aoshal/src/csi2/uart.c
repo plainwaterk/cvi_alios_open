@@ -12,7 +12,7 @@
 #ifdef CONFIG_HAL_UART_RINGBUF_LEN
 #define HAL_UART_RINGBUF_LEN (CONFIG_HAL_UART_RINGBUF_LEN)
 #else
-#define HAL_UART_RINGBUF_LEN (256)
+#define HAL_UART_RINGBUF_LEN (1024)
 #endif
 
 #ifdef CONFIG_HAL_UART_NUM
@@ -146,7 +146,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
 
     if (ret < 0) {
         goto fail;
-    }   
+    }
 
 #ifndef UART_MODE_SYNC
     if (!aos_event_is_valid(&uart_list[uart->port].event_write_read)) {
@@ -175,7 +175,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
     case NO_PARITY:
         parity = UART_PARITY_NONE;
         break;
-    
+
     case ODD_PARITY:
         parity = UART_PARITY_ODD;
         break;
@@ -228,7 +228,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
     }
 
 #endif
-    
+
     uart_list[uart->port].uart_dev = uart;
 
 success:
